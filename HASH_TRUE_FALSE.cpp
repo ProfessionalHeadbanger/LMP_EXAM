@@ -1,5 +1,5 @@
-//Таблица с true false. add, find, remove пока не доделан
-
+//Таблица с true false. add, find, remove
+ 
 #include <iostream>
 #include <Windows.h>
 #include "HashTable.h"
@@ -19,22 +19,34 @@ void find(HashTable_2& table, std::string key)
 		std::cout << "Not found";
 }
  
-//void remove(HashTable_2& table, std::string key)
-//{
-//	int hash = table.hash(key);
-//	std::vector<CELL>::iterator It = std::find_if(table.data.begin(), table.data.end(), [&key](CELL elem)->bool {return elem.used == true && elem.elem.key == key; });
-//	if (It != table.data.end())
-//	{
-//		auto len = [=](int x, int y) {return (x - y + table.size) % table.size; };
-//		std::cout << "Deleted";
-//		(*It).used = false;
-//		int curr = hash;
-//		int find = (curr + 1) % table.size;
-//
-//	}
-//	else
-//		std::cout << "Not deleted";
-//}
+void remove(HashTable_2& table, std::string key)
+{
+	int hash = table.hash(key);
+	std::vector<CELL>::iterator It = std::find_if(table.data.begin(), table.data.end(), [&key](CELL elem)->bool {return elem.used == true && elem.elem.key == key; });
+	if (It != table.data.end())
+	{
+		auto len = [=](int x, int y) {return (x - y + table.size) % table.size; };
+		std::cout << "Deleted";
+		(*It).used = false;
+		int curr = hash;
+		int find = (curr + 1) % table.size;
+		while (table.data[find].used) {
+			int hashInd = table.hash(table.data[find].elem.key);
+			if (len(curr, find) >= len(hashInd,find))
+			{
+				table.data[curr] = table.data[find];
+				table.data[curr].used = true;
+				table.data[find].used = false;
+				curr = find;
+			}
+ 
+			find = (find + 1) % table.size;
+		}
+ 
+	}
+	else
+		std::cout << "Not deleted";
+}
  
 void add(HashTable_2& table, ELEM elem)
 {
@@ -78,11 +90,11 @@ int main()
 {
 	HashTable_2 table;
 	table.print();
-	//std::string key;
-	//std::cin >> key;
-	ELEM elem;
-	elem.key = "faf";
-	elem.other = 123;
-	add(table, elem);
+	std::string key;
+	std::cin >> key;
+	/*ELEM elem;
+	elem.key = "bsc";
+	elem.other = 123;*/
+	find(table, key);
 	table.print();
 }
