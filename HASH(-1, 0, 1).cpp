@@ -1,45 +1,85 @@
-// Описать функцию, которая принимает хеш-таблицу (-1, 0, 1),
-// ключ (string) и осуществляет поиск информации по ключу
+//Внутреннее решение коллизии с таблицей (-1, 0, 1). add, find, remove
+
 #include <iostream>
 #include <Windows.h>
 #include "HashTable.h"
 #include <string>
 #include <fstream>
  
-using THT = std::vector<CELL>;
-using Iterator = THT::iterator;
- 
-void find1(HashTable_2& table, std::string key)
+void find(HashTable_2& table, std::string key)
 {
 	int hash = table.hash(key);
-	Iterator It = std::find_if(table.data.begin(), table.data.end(), [&key](CELL elem)-> bool {return elem.used == 1 && elem.elem.key == key; });
-	ELEM result = (*It).elem;
-	std::cout << result.key << result.other;
+	std::vector<CELL>::iterator It = std::find_if(table.data.begin(), table.data.end(), [&key](CELL elem)-> bool {return elem.used == 1 && elem.elem.key == key; });
+	if (It != table.data.end())
+	{
+		ELEM result = (*It).elem;
+		std::cout << result.key << " " << result.other << "\n";
+	}
+	else
+		std::cout << "Not found";
 }
  
-void find2(HashTable_2& table, std::string key)
+void remove(HashTable_2& table, std::string key)
 {
 	int hash = table.hash(key);
-	if (table.data[hash].elem.key == key)
+	std::vector<CELL>::iterator It = std::find_if(table.data.begin(), table.data.end(), [&key](CELL elem)->bool {return elem.used == 1 && elem.elem.key == key; });
+	if (It != table.data.end())
 	{
-		std::cout << hash << table.data[hash].elem.key << ' ' << table.data[hash].elem.other << ' ' << std::endl;
+		(*It).used = -1;
+		std::cout << "Deleted";
 	}
-	else 
+	else
+		std::cout << "Not deleted";
+}
+ 
+void add(HashTable_2& table, ELEM elem)
+{
+	int hash = table.hash(elem.key);
+	std::vector<CELL>::iterator It = std::find_if(table.data.begin(), table.data.end(), [&elem](CELL el)->bool {return el.used == 1 && el.elem.key == elem.key; });
+	bool added = false;
+	if (It == table.data.end())
 	{
-		for (int i = hash + 1; i < 150; i++)
+		if (table.data[hash].used != 1)
 		{
-			if (table.data[hash].elem.key == key)
+			table.data[hash].elem = elem;
+			table.data[hash].used = 1;
+			added = true;
+		}
+		else
+		{
+ 
+			int cur = hash + 1;
+			while (cur != hash && !added)
 			{
-				std::cout << hash << table.data[hash].elem.key << ' ' << table.data[hash].elem.other << ' ' << std::endl;
+				if (table.data[cur].used != 1)
+				{
+					table.data[cur].elem = elem;
+					table.data[cur].used = 1;
+					added = true;
+				}
+				cur = (cur + 1) % table.size;
 			}
 		}
+	}
+	if (added)
+	{
+		std::cout << "Added";
+	}
+	else
+	{
+		std::cout << "Not added";
 	}
 }
  
 int main()
 {
 	HashTable_2 table;
-	std::string key;
-	std::cin >> key;
-	find2(table, key);
+	table.print();
+	//std::string key;
+	//std::cin >> key;
+	ELEM elem;
+	elem.key = "faf";
+	elem.other = 123;
+	add(table, elem);
+	table.print();
 }
